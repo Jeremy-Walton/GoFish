@@ -10,21 +10,18 @@ class Deck
 				@cards = @cards.push(PlayingCard.new(rank))
 			end
 		end
+		shuffle
 	end
 
 	def size
 		@cards.count
 	end
 
-	def top_card
-		@cards.last.value
-	end
-
 	def shuffle
 		@cards.shuffle!
 	end
 
-	def deal
+	def take_top_card
 		@cards.pop
 	end
 
