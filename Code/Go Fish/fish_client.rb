@@ -1,7 +1,7 @@
 require 'socket'
 
 class FishClient
-
+	attr_reader :socket
 	def initialize(port, name='')
 		puts 'What is your name?'
 		hostname = 'localhost' 
@@ -23,23 +23,25 @@ class FishClient
 
 	def display_broadcast
 		begin
-			 @socket.read_nonblock(100)
-		rescue
-
-		end
-	end
-
-	def display_narrowcast
-		begin
-			puts @socket.read_nonblock(100)
+			message = @socket.recv_nonblock(100)
+			puts message+' in display_broadcast' if(message != '')
+			if(message == "What would you like to do?")
+				puts message+" tag"
+				@client.provide_input
+			end
 		rescue
 			
 		end
 	end
 
+	def display_narrowcast
+		
+	end
+
 	def provide_input
-		input = gets.chomp
-		@socket.puts input
+		input = STDIN.gets.chomp
+		#puts input
+		@socket.puts input 
 	end
 
 	def give_hand
@@ -51,17 +53,27 @@ end
 
 if(__FILE__ == $0)
 	@client = FishClient.new(3333)
-	@client.get_broadcast
 	@client.provide_name
-
-	@client.get_broadcast
-	@client.get_broadcast
-	puts 'before loop'
-	while(true)
-		if(@client.display_narrowcast)
-			puts 'maybe here'
-			@client.provide_input
+	Thread.new(@client.socket) do |client|
+		loop do
+			puts client.gets.chomp
 		end
-		@client.get_broadcast
-	end	
+	end
+	begin
+		loop do
+			line = readline
+			@client.socket.puts line unless line.strip.empty?
+		end
+	rescue EOFError
+		puts 'Leaving...'
+	end
+	# @client.get_broadcast
+	# @client.provide_name
+
+	# while(true)
+	# 	@client.display_broadcast
+	# 	# 	puts 'What would you like to do?'
+	# 	# 	@client.provide_input
+	# 	# end
+	# end	
 end

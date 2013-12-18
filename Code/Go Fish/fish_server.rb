@@ -11,7 +11,7 @@ class FishServer
 		@client_list = []
 		@players = []
 		@game = nil
-		@number_of_players = 4
+		@number_of_players = 2
 		@names = []
 		@asker = nil
 		puts 'Server created on port: ' + port.to_s
@@ -116,22 +116,21 @@ if(__FILE__ == $0)
 	
 	while(true)
 		@server.display_cards
+		#sleep(2)
 		@server.play_round_step_1
+		#sleep(2)
 		@server.play_round_step_2
-		while (true)
+		#sleep(2)
+
 			puts 'in here'
 			index = @server.players.index(@server.asker)
 			input = @server.get_input(index)
+			puts input
 			parsed_input = @server.check_input_is_valid(input)
-			# if(parsed_input == '')
-			# 	@client_list[index].puts 'Invalid input, please retype'
-			# else
-			# 	puts 'done'
-			 	break
-			# end
-			puts 'not done'
-		end
+			
+		puts 'making results'
 		results = @server.ask_for_cards(parsed_input[1], @server.asker, @server.players[(parsed_input[0].to_i-1)])
 		@server.broadcast(results)
+		# sleep(2)
 	end
 end
