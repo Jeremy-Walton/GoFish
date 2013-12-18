@@ -132,90 +132,68 @@ describe FishServer do
 	end
 
 	it "can accept connections" do
-		player1 = FishClient.new(3333)
-		player2 = FishClient.new(3333)
-		player3 = FishClient.new(3333)
-		player4 = FishClient.new(3333)
+		players = %w(bob jill bill bo).map {|name| FishClient.new(3333, name)}
 		@server.accept_connections
 		@server.client_list.count.should eq(4)
 	end
 
 	it "receives broadcasts" do
-		player1 = FishClient.new(4444, 'jill')
-		player2 = FishClient.new(4444, 'bob')
-		player3 = FishClient.new(4444, 'joe')
-		player4 = FishClient.new(4444, 'bill')
+		players = %w(bob jill bill bo).map {|name| FishClient.new(3333, name)}
 
 		@server.accept_connections
-		player1.get_broadcast.should eq("#{server.number_of_players} people are connected")
-		player2.get_broadcast
-		player3.get_broadcast
-		player4.get_broadcast.should eq("#{server.number_of_players} people are connected")
+		
+		players.each {|player| player.get_broadcast.should eq("#{@server.number_of_players} people are connected")}
 	end
 
 	it "can get name back from clients" do
-		server = FishServer.new(5555)
-		player1 = FishClient.new(5555, 'jill')
-		player2 = FishClient.new(5555, 'bob')
-		player3 = FishClient.new(5555, 'joe')
-		player4 = FishClient.new(5555, 'bill')
+		players = %w(bob jill bill bo).map {|name| FishClient.new(3333, name)}
 
-		server.accept_connections
-		player1.get_broadcast
-		player2.get_broadcast
-		player3.get_broadcast
-		player4.get_broadcast
-
-		player1.provide_name
-		player2.provide_name
-		player3.provide_name
-		player4.provide_name
-		server.get_names
-		server.names.should eq(['jill', 'bob', 'joe', 'bill'])
-	end
-
-	it "can make a game with four clients" do
-		server = FishServer.new(6666)
-		player1 = FishClient.new(6666, 'jill')
-		player2 = FishClient.new(6666, 'bob')
-		player3 = FishClient.new(6666, 'joe')
-		player4 = FishClient.new(6666, 'bill')
-
-		server.accept_connections
-		player1.get_broadcast
-		player2.get_broadcast
-		player3.get_broadcast
-		player4.get_broadcast
-
-		player1.provide_name
-		player2.provide_name
-		player3.provide_name
-		player4.provide_name
-		server.get_names
-
-		server.assign_players
-
-		server.setup_game
-		server.players.first.number_of_cards.should eq(5)
-		server.players.last.number_of_cards.should eq(5)
-	end
-
-	it "can play a round" do
-		server = FishServer.new(4444)
-		#players = %w(bob jill bill bo).map {|name| FishClient.new(4444, name)}
-		players = %w(bob jill bill bo).map {|name| MockClient.new(4444, name)}
-		server.accept_connections
+		@server.accept_connections
 		players.each {|player| player.get_broadcast}
 
 		players.each {|player| player.provide_name}
-		server.get_names
+		@server.get_names
+		@server.names.should eq(['bob', 'jill', 'bill', 'bo'])
+	end
 
-		server.assign_players
+	it "can make a game with four clients" do
+		players = %w(bob jill bill bo).map {|name| FishClient.new(3333, name)}
 
-		server.setup_game
+		@server.accept_connections
+		players.each {|player| player.get_broadcast}
 
-		server.play_round
-		expect(client1.output).to include "something"
+		players.each {|player| player.provide_name}
+		@server.get_names
+
+		@server.assign_players
+
+		@server.setup_game
+		@server.players.first.number_of_cards.should eq(5)
+		@server.players.last.number_of_cards.should eq(5)
+	end
+
+	it "can play a round" do
+		#players = %w(bob jill bill bo).map {|name| FishClient.new(4444, name)}
+		players = %w(bob jill bill bo).map {|name| MockClient.new(3333, name)}
+		@server.accept_connections
+		players.each {|player| player.get_broadcast}
+
+		players.each {|player| player.provide_name}
+		@server.get_names
+
+		@server.assign_players
+
+		@server.setup_game
+
+		#loop
+		@server.display_cards
+		players.each {|player| player.display_broadcast}
+		@server.play_round
+		players.each {|player| player.display_broadcast}
+		players[0].display_broadcast
+		@server.get_input(0)
+
+		#expect(players[0].output).to include "Your cards"
 	end
 
 end

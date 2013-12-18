@@ -15,7 +15,7 @@ class FishGame
 	end
 
 	def whos_turn?
-		@turn_order.first
+		@turn_order[0]
 	end
 
 	def print_cards

@@ -6,9 +6,27 @@ class MockClient
 		#@hostname = STDIN.gets.chomp
 		@port = port
 		@name = name
-		@s = TCPSocket.open(@hostname,@port)
+		@broadcast
+		@socket = TCPSocket.open(@hostname,@port)
 		puts 'You connected'
 		puts 'Waiting for other player.'
+	end
+
+	def get_broadcast
+		@broadcast = @socket.gets.chomp
+		@broadcast
+	end
+
+	def provide_name
+		@socket.puts @name
+	end
+
+	def display_broadcast
+		puts get_broadcast
+	end
+
+	def output
+		@broadcast
 	end
 
 end

@@ -14,6 +14,10 @@ class FishServer
 		puts 'Server created on port: ' + @port.to_s
 	end
 
+	def close
+		@server.close
+	end
+
 	def accept_connections	
 		@number_of_players.times do |time|
 			@client_list.push(@server.accept)
@@ -29,8 +33,8 @@ class FishServer
 	end
 
 	def assign_players
-			@client_list.each do |client|
-				hand = FishHand.new([], @names)
+			@client_list.each_with_index do |client, index|
+				hand = FishHand.new([], @names[index])
 				@players.push(hand)
 			end
 	end
@@ -52,13 +56,23 @@ class FishServer
 
 	def display_cards
 		@client_list.each_with_index do |client, index|
-			client.puts "Your cards #{@players[index].cards}"
+				message =  "Your cards "
+			@players[index].cards.each do |card|
+				message += "#{card.rank}, "
+			end
+			client.puts message
 		end
 	end
 
 	def play_round
-		display_cards
 		asker = @game.whos_turn?
+		broadcast("It is #{asker.name}'s turn")
+		index = @players.index(asker)
+		@client_list[index].puts "What would you like to do?"
+	end
+
+	def get_input(index)
+		@client_list[index].gets.chomp
 	end
 
 	def is_running?
