@@ -33,12 +33,13 @@ class FishGame
 		if(cards.count == 0)
 			card = go_fish
 			asker.take_cards(card)
+			books = asker.check_for_books(card.rank)
 			@turn_order = @turn_order.rotate if(card.rank != card_rank)
 		else
 			asker.take_cards(cards)
+			books = asker.check_for_books(cards.first.rank)
 			@turn_order = @turn_order.rotate if(cards.first.rank != card_rank)
 		end
-		books = asker.check_for_books
 		round_info = RoundResults.new(asker, giver, card_rank, cards.count, books)
 		results = round_info.get_results
 		return results

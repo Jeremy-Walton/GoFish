@@ -48,10 +48,6 @@ class FishServer
 		end
 	end
 
-	def get_hand(client)
-		JSON.parse(client.gets.chomp)
-	end
-
 	def setup_game
 		@game = FishGame.new(@players)
 		@game.setup
@@ -82,8 +78,8 @@ class FishServer
 	end
 
 	def check_input_is_valid(input)
-		if(input.match(/.*([2-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/))
-			parsed_input = input.match(/.*([2-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/)
+		if(input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/))
+			parsed_input = input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/)
 			parsed_input = parsed_input.to_a
 			parsed_input.shift
 			return parsed_input
@@ -116,21 +112,18 @@ if(__FILE__ == $0)
 	
 	while(true)
 		@server.display_cards
-		#sleep(2)
 		@server.play_round_step_1
-		#sleep(2)
 		@server.play_round_step_2
-		#sleep(2)
 
 			puts 'in here'
 			index = @server.players.index(@server.asker)
 			input = @server.get_input(index)
 			puts input
+			#problem here
 			parsed_input = @server.check_input_is_valid(input)
 			
 		puts 'making results'
 		results = @server.ask_for_cards(parsed_input[1], @server.asker, @server.players[(parsed_input[0].to_i-1)])
 		@server.broadcast(results)
-		# sleep(2)
 	end
 end

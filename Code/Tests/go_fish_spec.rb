@@ -146,11 +146,13 @@ describe FishServer do
 	end
 
 	it "can get name back from clients" do
+		puts 'hi'
 		players = %w(bob jill bill bo).map {|name| FishClient.new(3333, name)}
 
 		@server.accept_connections
+		puts 'connected'
 		players.each {|player| player.get_broadcast}
-
+		puts 'here'
 		players.each {|player| player.provide_name}
 		@server.get_names
 		@server.names.should eq(['bob', 'jill', 'bill', 'bo'])
@@ -173,7 +175,6 @@ describe FishServer do
 	end
 
 	it "can play round up to asking for player input" do
-		#players = %w(bob jill bill bo).map {|name| FishClient.new(4444, name)}
 		players = %w(bob jill bill bo).map {|name| MockClient.new(3333, name)}
 		@server.accept_connections
 		players.each {|player| player.get_broadcast}

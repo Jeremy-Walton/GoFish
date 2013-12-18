@@ -25,17 +25,15 @@ class FishHand
 		return_cards
 	end
 
-	def check_for_books
+	def check_for_books(card_rank)
 		return_cards = []
-		@cards.each do |card|
-			book = []
-			@cards.each{|card2| book.push(card) if card2.rank == card.rank}
+		book = []
+			@cards.each{|card| book.push(card) if card_rank == card.rank}
 			return_cards = book if(book.count == 4)
 			if(return_cards.first != nil)
 				@cards.delete_if{|card| card.rank == return_cards.first.rank}
 				@books.push(return_cards.first.rank)
 			end
-		end
 		return @books
 	end
 
