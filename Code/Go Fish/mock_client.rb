@@ -21,6 +21,10 @@ class MockClient
 		@socket.puts @name
 	end
 
+	def provide_input
+		@socket.puts 'Player 2, Ace'
+	end
+
 	def display_broadcast
 		puts get_broadcast
 	end

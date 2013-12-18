@@ -172,7 +172,7 @@ describe FishServer do
 		@server.players.last.number_of_cards.should eq(5)
 	end
 
-	it "can play a round" do
+	it "can play round up to asking for player input" do
 		#players = %w(bob jill bill bo).map {|name| FishClient.new(4444, name)}
 		players = %w(bob jill bill bo).map {|name| MockClient.new(3333, name)}
 		@server.accept_connections
@@ -188,21 +188,60 @@ describe FishServer do
 		#loop
 		@server.display_cards
 		players.each {|player| player.display_broadcast}
-		@server.play_round
+		@server.play_round_step_1
 		players.each {|player| player.display_broadcast}
-		players[0].display_broadcast
-		@server.get_input(0)
+		@server.play_round_step_2
+		index = @server.players.index(@server.asker)
+		players[index].display_broadcast
+		while (true)
+			players[index].provide_input
+			input = @server.get_input(index)
+			parsed_input = @server.check_input_is_valid(input)
+			if(parsed_input == '')
+				puts 'Invalid input, please retype'
+			else
+				break
+			end
+		end
+		expect(parsed_input).to include "2"
+	end
 
-		#expect(players[0].output).to include "Your cards"
+	it "do stuff with the input" do
+		players = %w(bob jill bill bo).map {|name| MockClient.new(3333, name)}
+		@server.accept_connections
+		players.each {|player| player.get_broadcast}
+
+		players.each {|player| player.provide_name}
+		@server.get_names
+
+		@server.assign_players
+
+		@server.setup_game
+
+		@server.display_cards
+		players.each {|player| player.display_broadcast}
+		@server.play_round_step_1
+		players.each {|player| player.display_broadcast}
+		@server.play_round_step_2
+		index = @server.players.index(@server.asker)
+		players[index].display_broadcast
+		while (true)
+			players[index].provide_input
+			input = @server.get_input(index)
+			parsed_input = @server.check_input_is_valid(input)
+			if(parsed_input == '')
+				puts 'Invalid input, please retype'
+			else
+				break
+			end
+		end
+
+		results = @server.ask_for_cards(parsed_input[1], @server.asker, @server.players[parsed_input[0].to_i])
+		expect(results).to include 'he/she had'
+
 	end
 
 end
-
-# def capture_output(socket)
-# 	socket.read_nonblock(1000)
-# rescue
-# 	""
-# end
 
 # context "Game already connects to clients" do
 

@@ -1,17 +1,20 @@
 require 'socket'
 require 'json'
+require_relative './fish_hand.rb'
+require_relative './fish_game.rb'
 
 class FishServer
-	attr_reader :client_list, :players, :number_of_players, :names
+	attr_reader :client_list, :players, :number_of_players, :names, :asker
 
 	def initialize(port)
 		@server = TCPServer.open(port)
 		@client_list = []
 		@players = []
-		@port = port
+		@game = nil
 		@number_of_players = 4
 		@names = []
-		puts 'Server created on port: ' + @port.to_s
+		@asker = nil
+		puts 'Server created on port: ' + port.to_s
 	end
 
 	def close
@@ -64,11 +67,29 @@ class FishServer
 		end
 	end
 
-	def play_round
-		asker = @game.whos_turn?
-		broadcast("It is #{asker.name}'s turn")
-		index = @players.index(asker)
+	def ask_for_cards(card_rank, asker, giver)
+		@game.ask_player_for_card(card_rank, asker, giver)
+	end
+
+	def play_round_step_1
+		@asker = @game.whos_turn?
+		broadcast("It is #{@asker.name}'s turn")
+	end
+
+	def play_round_step_2
+		index = @players.index(@asker)
 		@client_list[index].puts "What would you like to do?"
+	end
+
+	def check_input_is_valid(input)
+		if(input.match(/.*([2-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/))
+			parsed_input = input.match(/.*([2-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/)
+			parsed_input = parsed_input.to_a
+			parsed_input.shift
+			return parsed_input
+		else
+			return ''
+		end
 	end
 
 	def get_input(index)
@@ -83,4 +104,34 @@ class FishServer
 		end
 	end
 
+end
+
+if(__FILE__ == $0)
+
+	@server = FishServer.new(3333)
+	@server.accept_connections
+	@server.get_names
+	@server.assign_players
+	@server.setup_game
+	
+	while(true)
+		@server.display_cards
+		@server.play_round_step_1
+		@server.play_round_step_2
+		while (true)
+			puts 'in here'
+			index = @server.players.index(@server.asker)
+			input = @server.get_input(index)
+			parsed_input = @server.check_input_is_valid(input)
+			# if(parsed_input == '')
+			# 	@client_list[index].puts 'Invalid input, please retype'
+			# else
+			# 	puts 'done'
+			 	break
+			# end
+			puts 'not done'
+		end
+		results = @server.ask_for_cards(parsed_input[1], @server.asker, @server.players[(parsed_input[0].to_i-1)])
+		@server.broadcast(results)
+	end
 end
