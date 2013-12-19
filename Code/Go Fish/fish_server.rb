@@ -1,19 +1,17 @@
 require 'socket'
-require 'json'
 require_relative './fish_hand.rb'
 require_relative './fish_game.rb'
 
 class FishServer
-	attr_reader :client_list, :players, :number_of_players, :names, :asker
+	attr_reader :player_sockets, :players, :number_of_players, :names, :asker, :game
 
 	def initialize(port)
 		@server = TCPServer.open(port)
-		@client_list = []
-		@players = []
-		@game = nil
-		@number_of_players = 2
-		@names = []
-		@asker = nil
+		@player_sockets, @players, @names = [], [], []
+		@game, @asker = nil, nil
+		puts "How many player can connect?"
+		@number_of_players = STDIN.gets.chomp.to_i
+		#@number_of_players = 4
 		puts 'Server created on port: ' + port.to_s
 	end
 
@@ -23,27 +21,27 @@ class FishServer
 
 	def accept_connections	
 		@number_of_players.times do |time|
-			@client_list.push(@server.accept)
-			puts'Player ' + (time+1).to_s + ' Connected'
+			@player_sockets.push(@server.accept)
+			puts'Player '+(time+1).to_s+' Connected'
 		end
 		broadcast("#{@number_of_players} people are connected")
 	end
 
 	def get_names
-		@client_list.each do |client|
+		@player_sockets.each do |client|
 			@names.push(client.gets.chomp)
 		end
 	end
 
 	def assign_players
-			@client_list.each_with_index do |client, index|
+			@player_sockets.each_with_index do |client, index|
 				hand = FishHand.new([], @names[index])
 				@players.push(hand)
 			end
 	end
 
 	def broadcast(message)
-		@client_list.each do |client|
+		@player_sockets.each do |client|
 			client.puts message
 		end
 	end
@@ -54,8 +52,8 @@ class FishServer
 	end
 
 	def display_cards
-		@client_list.each_with_index do |client, index|
-				message =  "Your cards "
+		@player_sockets.each_with_index do |client, index|
+			message =  "Your cards "
 			@players[index].cards.each do |card|
 				message += "#{card.rank}, "
 			end
@@ -74,22 +72,46 @@ class FishServer
 
 	def play_round_step_2
 		index = @players.index(@asker)
-		@client_list[index].puts "What would you like to do?"
+		@player_sockets[index].puts "What would you like to do?"
 	end
 
 	def check_input_is_valid(input)
 		if(input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/))
-			parsed_input = input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/)
-			parsed_input = parsed_input.to_a
-			parsed_input.shift
+			parsed_input = input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/).to_a
+			parsed_input = parsed_input.shift
 			return parsed_input
 		else
 			return ''
 		end
 	end
 
+	def count_player_books
+		winner = ''
+		book_count, new_book_count = 0, 0
+		ties_list = []
+		@players.each do |player|
+			new_book_count = player.number_of_books
+			if(new_book_count > book_count)
+				book_count = new_book_count
+				winner = player.name
+				ties_list = []
+			else
+				ties_list.push(player.name) if (new_book_count == book_count)
+			end		
+		end
+		if(ties_list.size > 0)
+			ties_list.each do |player|
+				winner += " #{player}"
+			end
+			winner = "And the Winners are.. " + winner + ". You guys rock!"
+		else
+			winner = "And the Winner is.. "+winner+". You rock!"
+		end
+		winner
+	end
+
 	def get_input(index)
-		@client_list[index].gets.chomp
+		@player_sockets[index].gets.chomp
 	end
 
 	def is_running?
@@ -98,6 +120,10 @@ class FishServer
 		else
 			false
 		end
+	end
+
+	def game_over
+		@players.any? { |player| player.cards.count == 0}
 	end
 
 end
@@ -110,20 +136,21 @@ if(__FILE__ == $0)
 	@server.assign_players
 	@server.setup_game
 	
-	while(true)
+	while(!@server.game_over)
 		@server.display_cards
 		@server.play_round_step_1
 		@server.play_round_step_2
 
-			puts 'in here'
-			index = @server.players.index(@server.asker)
-			input = @server.get_input(index)
-			puts input
-			#problem here
-			parsed_input = @server.check_input_is_valid(input)
-			
+		puts 'in here'
+		index = @server.players.index(@server.asker)
+		input = @server.get_input(index)
+		parsed_input = @server.check_input_is_valid(input)
 		puts 'making results'
 		results = @server.ask_for_cards(parsed_input[1], @server.asker, @server.players[(parsed_input[0].to_i-1)])
 		@server.broadcast(results)
 	end
+	@server.broadcast("Someone ran out of cards. Counting matched cards")
+	winner = @server.count_player_books
+	@server.broadcast("#{winner}")
+	@server.player_sockets[@server.index(winner)].puts "Congradulations, you won!"
 end

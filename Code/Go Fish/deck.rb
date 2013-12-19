@@ -4,7 +4,7 @@ class Deck
 
 	def initialize
 		@cards = []
-		ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+		ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
 		4.times do
 			ranks.each do |rank|
 				@cards = @cards.push(PlayingCard.new(rank))

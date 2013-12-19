@@ -18,47 +18,33 @@ class FishGame
 		@turn_order[0]
 	end
 
-	def print_cards
-		@players.each do |player|
-			print "Player #{@players.index(player)+1} cards: "
-			player.cards.each do |card|
-				print card.rank + ", "
-			end
-			puts ""
-		end
-	end
-
 	def ask_player_for_card(card_rank, asker, giver)
 		cards = giver.got_any?(card_rank)
 		if(cards.count == 0)
 			card = go_fish
 			asker.take_cards(card)
 			books = asker.check_for_books(card.rank)
-			@turn_order = @turn_order.rotate if(card.rank != card_rank)
+			change_turn_order if(card.rank != card_rank)
 		else
 			asker.take_cards(cards)
 			books = asker.check_for_books(cards.first.rank)
-			@turn_order = @turn_order.rotate if(cards.first.rank != card_rank)
+			change_turn_order if(cards.first.rank != card_rank)
 		end
 		round_info = RoundResults.new(asker, giver, card_rank, cards.count, books)
-		results = round_info.get_results
-		return results
+		round_info.get_results
+	end
+
+	def change_turn_order
+		@turn_order = @turn_order.rotate
 	end
 
 	def deal
 		if (@players.count == 2)
-			7.times do
-				@players.each do |player|
-					player.take_cards(@deck.take_top_card)
-				end	
-			end
+			7.times {@players.each { |player| player.take_cards(@deck.take_top_card)}}
 		else
-			5.times do
-				@players.each do |player|
-					player.take_cards(@deck.take_top_card)
-				end	
-			end
+			5.times {@players.each { |player| player.take_cards(@deck.take_top_card)}}
 		end
+
 	end
 
 	def go_fish

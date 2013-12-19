@@ -43,8 +43,9 @@ describe FishHand do
 	it "check for books" do
 		player1 = FishHand.new([PlayingCard.new('2'), PlayingCard.new('2'), PlayingCard.new('2'), PlayingCard.new('2'), PlayingCard.new('3'), PlayingCard.new('3'), PlayingCard.new('3'), PlayingCard.new('3')])
 		player2 = FishHand.new([PlayingCard.new('4'), PlayingCard.new('3'), PlayingCard.new('7'), PlayingCard.new('A'), PlayingCard.new('K')])
-		player1.check_for_books
-		player2.check_for_books
+		player1.check_for_books('2')
+		player1.check_for_books('3')
+		player2.check_for_books('2')
 		player1.books.should eq(['2', '3'])
 		player2.books.should eq([])
 	end
@@ -95,7 +96,7 @@ describe FishGame do
 		#game.print_cards
 		results = game.ask_player_for_card('2', player1, player2)
 		#puts results
-		player1.check_for_books
+		player1.check_for_books('2')
 		player1.books.should eq(['2'])
 
 	end

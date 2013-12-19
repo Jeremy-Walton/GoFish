@@ -9,19 +9,25 @@ class RoundResults
 	end
 
 	def get_results
+		message = "#{@asker.name} asked #{@giver.name} for #{@card_rank}s, "
+		message2 = "but he/she had none, #{@asker.name} will take from deck. "
+		message3 = "and he/she had #{@number_of_cards}, #{@asker.name} took them. "
+		message4 = "#{@asker.name} found no matches"
+		message5 = "#{@asker.name} found these matches: #{@books}"
 		if(@number_of_cards == 0)
 			if (@books.first == nil)
-				return "#{@asker.name} asked #{@giver.name} for #{@card_rank}s, but he/she had none, #{@asker.name} will take from deck. #{@asker.name} found no matches"
+				return message + message2 + message4
 			else
-				return "#{@asker.name} asked #{@giver.name} for #{@card_rank}s, but he/she had none, #{@asker.name} will take from deck. #{@asker.name} found these matches: #{@books}"
+				return message + message2 + message5
 			end
 		else
 			if (@books.first == nil)
-				return "#{@asker.name} asked #{@giver.name} for #{@card_rank}s, and he/she had #{@number_of_cards}, #{@asker.name} took them. #{@asker.name} found no matches"
+				return message + message3 + message4
 			else
-				return "#{@asker.name} asked #{@giver.name} for #{@card_rank}s, and he/she had #{@number_of_cards}, #{@asker.name} took them. #{@asker.name} found these matches: #{@books}"
+				return message + message3 + message5
 			end
 		end
+		@books = []
 	end
 
 end	
