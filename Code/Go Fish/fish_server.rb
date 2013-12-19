@@ -53,11 +53,10 @@ class FishServer
 
 	def display_cards
 		@player_sockets.each_with_index do |client, index|
-			message =  "Your cards "
-			@players[index].cards.each do |card|
-				message += "#{card.rank}, "
-			end
-			client.puts message
+			cards = []
+			@players[index].cards.each {|card| cards.push(card.rank)}
+			cards.sort!
+			client.puts "Your cards #{cards}"
 		end
 	end
 
@@ -77,8 +76,9 @@ class FishServer
 
 	def check_input_is_valid(input)
 		if(input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/))
-			parsed_input = input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/).to_a
-			parsed_input = parsed_input.shift
+			parsed_input = input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/)
+			parsed_input = parsed_input.to_a
+			parsed_input.shift
 			return parsed_input
 		else
 			return ''
@@ -150,7 +150,7 @@ if(__FILE__ == $0)
 		@server.determine_whos_turn
 		@server.play_round_step_2
 
-		puts 'in here'
+		puts 'getting input'
 		index = @server.players.index(@server.asker)
 		while(true)
 			input = @server.get_input(index)
