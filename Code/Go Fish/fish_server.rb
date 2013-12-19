@@ -65,7 +65,7 @@ class FishServer
 		@game.ask_player_for_card(card_rank, asker, giver)
 	end
 
-	def play_round_step_1
+	def determine_whos_turn
 		@asker = @game.whos_turn?
 		broadcast("It is #{@asker.name}'s turn")
 	end
@@ -114,6 +114,14 @@ class FishServer
 		@player_sockets[index].gets.chomp
 	end
 
+	def display_player_names
+		message = ''
+		@players.each_with_index do |player, index|
+			message += "Player #{(index+1).to_s} is #{player.name}: "
+		end
+		broadcast(message)
+	end
+
 	def is_running?
 		if(@server)
 			true
@@ -137,14 +145,21 @@ if(__FILE__ == $0)
 	@server.setup_game
 	
 	while(!@server.game_over)
+		@server.display_player_names
 		@server.display_cards
-		@server.play_round_step_1
+		@server.determine_whos_turn
 		@server.play_round_step_2
 
 		puts 'in here'
 		index = @server.players.index(@server.asker)
-		input = @server.get_input(index)
-		parsed_input = @server.check_input_is_valid(input)
+		while(true)
+			input = @server.get_input(index)
+			parsed_input = @server.check_input_is_valid(input)
+			if(parsed_input != '' && parsed_input[0].to_i <= @server.number_of_players && parsed_input[0].to_i > 0)
+				break
+			end
+			@server.player_sockets[index].puts "Please type something valid."
+		end
 		puts 'making results'
 		results = @server.ask_for_cards(parsed_input[1], @server.asker, @server.players[(parsed_input[0].to_i-1)])
 		@server.broadcast(results)

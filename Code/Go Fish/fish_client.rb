@@ -10,6 +10,7 @@ class FishClient
 		#@name = name
 		@socket = TCPSocket.open(hostname,port)
 		puts 'You connected'
+		post_login_message
 		puts 'Waiting for other player.'
 	end
 
@@ -19,6 +20,18 @@ class FishClient
 
 	def get_broadcast
 		@socket.gets.chomp
+	end
+
+	def post_login_message
+		puts ''
+		puts "Hi #{@name}, Welcome to Go Fish!"
+		puts "When it's your turn, you can ask other players for cards."
+		puts "A normal command consists of a number 2-10 followed "
+		puts "by a card rank 2-10, Jack, Queen, King or Ace"
+		puts "Here are some examples:"
+		puts "Give me player 2 Ace"
+		puts "3 6"
+		puts ''
 	end
 end
 
