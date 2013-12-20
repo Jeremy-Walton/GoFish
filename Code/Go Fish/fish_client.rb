@@ -3,11 +3,13 @@ require 'socket'
 class FishClient
 	attr_reader :socket
 	def initialize(port, name='')
-		puts 'What is your name?'
-		hostname = 'localhost' 
+		puts 'What server would you like to connect to?'
 		#must change when testing
+		hostname = STDIN.gets.chomp
+		puts 'What is your name?'
 		@name = STDIN.gets.chomp
 		#@name = name
+		#hostname = 'localhost' 
 		@socket = TCPSocket.open(hostname,port)
 		puts 'You connected'
 		post_login_message

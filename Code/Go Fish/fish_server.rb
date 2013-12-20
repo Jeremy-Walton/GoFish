@@ -55,9 +55,9 @@ class FishServer
 		@player_sockets.each_with_index do |client, index|
 			card_ranks = []
 			@players[index].cards.each {|card| card_ranks.push(card.rank)}
-			card_rank.sort!
+			card_ranks.sort!
 			top_line, middle_line, bottom_line = '', '', ''
-			card_rank.each do |card|
+			card_ranks.each do |card|
 				if(card == '10')
 					top_line += " ---- "
 					bottom_line += " ---- "
