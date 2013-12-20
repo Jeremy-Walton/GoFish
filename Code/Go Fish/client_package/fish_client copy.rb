@@ -46,7 +46,14 @@ if(__FILE__ == $0)
 	@client.provide_name
 	Thread.new(@client.socket) do |client|
 		loop do
-			puts client.gets.chomp
+			message =  client.gets.chomp
+			puts message
+			pid = fork{ exec 'afplay', 'card.wav' } if(message == "What would you like to do?")
+			if(message == "Someone ran out of cards. Counting matched cards")
+				pid = fork{ exec 'afplay', 'win_song.wav' }
+				sleep(10)
+				pid = fork{ exec 'afplay', 'congrats.wav' }
+			end
 		end
 	end
 	begin

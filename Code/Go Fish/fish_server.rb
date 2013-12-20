@@ -173,7 +173,15 @@ if(__FILE__ == $0)
 			input = @server.get_input(index)
 			parsed_input = @server.check_input_is_valid(input)
 			if(parsed_input != '' && parsed_input[0].to_i <= @server.number_of_players && parsed_input[0].to_i > 0)
-				break
+				cards = []
+				@server.asker.cards.each do |card|
+					cards.push(card.rank)
+				end
+				if(cards.include?(parsed_input[1]) == false)
+					@server.player_sockets[index].puts "You cannot ask for a card you don't already have."
+				else
+					break
+				end
 			end
 			@server.player_sockets[index].puts "Please type something valid."
 		end
@@ -181,13 +189,8 @@ if(__FILE__ == $0)
 		results = @server.ask_for_cards(parsed_input[1], @server.asker, @server.players[(parsed_input[0].to_i-1)])
 		@server.broadcast(results)
 		@server.broadcast('')
-		pid = fork{ exec 'afplay', 'card.wav' }
 	end
 	@server.broadcast("Someone ran out of cards. Counting matched cards")
 	winner = @server.count_player_books
 	@server.broadcast("#{winner}")
-	pid = fork{ exec 'afplay', 'win_song.wav' }
-	sleep(10)
-	pid = fork{ exec 'afplay', 'congrats.wav' }
-	sleep(10)
 end
