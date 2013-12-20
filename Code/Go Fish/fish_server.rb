@@ -9,7 +9,7 @@ class FishServer
 		@server = TCPServer.open(port)
 		@player_sockets, @players, @names = [], [], []
 		@game, @asker = nil, nil
-		puts "How many player can connect?"
+		puts "How many players can connect?"
 		@number_of_players = STDIN.gets.chomp.to_i
 		#@number_of_players = 4
 		puts 'Server created on port: ' + port.to_s
@@ -53,10 +53,23 @@ class FishServer
 
 	def display_cards
 		@player_sockets.each_with_index do |client, index|
-			cards = []
-			@players[index].cards.each {|card| cards.push(card.rank)}
-			cards.sort!
-			client.puts "Your cards #{cards}"
+			card_ranks = []
+			@players[index].cards.each {|card| card_ranks.push(card.rank)}
+			card_rank.sort!
+			top_line, middle_line, bottom_line = '', '', ''
+			card_rank.each do |card|
+				if(card == '10')
+					top_line += " ---- "
+					bottom_line += " ---- "
+				else
+					top_line += " --- "
+					bottom_line += " --- "
+				end
+				middle_line += " |#{card}| "
+			end
+			client.puts top_line
+			client.puts middle_line
+			client.puts bottom_line
 		end
 	end
 
@@ -75,8 +88,8 @@ class FishServer
 	end
 
 	def check_input_is_valid(input)
-		if(input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/))
-			parsed_input = input.match(/.*([1-9]|10).*(Jack|Ace|Queen|King|[2-9]|10)/)
+		if(input.match(/.*([1-9]|10).*(J|A|Q|K|[2-9]|10)/))
+			parsed_input = input.match(/.*([1-9]|10).*(J|A|Q|K|[2-9]|10)/)
 			parsed_input = parsed_input.to_a
 			parsed_input.shift
 			return parsed_input
@@ -86,14 +99,14 @@ class FishServer
 	end
 
 	def count_player_books
-		winner = ''
+		winner = '|'
 		book_count, new_book_count = 0, 0
 		ties_list = []
 		@players.each do |player|
 			new_book_count = player.number_of_books
 			if(new_book_count > book_count)
 				book_count = new_book_count
-				winner = player.name
+				winner = player.name+' |'
 				ties_list = []
 			else
 				ties_list.push(player.name) if (new_book_count == book_count)
@@ -101,7 +114,7 @@ class FishServer
 		end
 		if(ties_list.size > 0)
 			ties_list.each do |player|
-				winner += " #{player}"
+				winner += " #{player} |"
 			end
 			winner = "And the Winners are.. " + winner + ". You guys rock!"
 		else
@@ -115,9 +128,9 @@ class FishServer
 	end
 
 	def display_player_names
-		message = ''
+		message = '|'
 		@players.each_with_index do |player, index|
-			message += "Player #{(index+1).to_s} is #{player.name}: "
+			message += " Player #{(index+1).to_s} is #{player.name} | "
 		end
 		broadcast(message)
 	end
@@ -145,8 +158,11 @@ if(__FILE__ == $0)
 	@server.setup_game
 	
 	while(!@server.game_over)
+		@server.broadcast('')
+		@server.broadcast("----------------------------------------------------------------------------------------------------")
 		@server.display_player_names
 		@server.display_cards
+		@server.broadcast("----------------------------------------------------------------------------------------------------")
 		@server.determine_whos_turn
 		@server.play_round_step_2
 
@@ -163,6 +179,7 @@ if(__FILE__ == $0)
 		puts 'making results'
 		results = @server.ask_for_cards(parsed_input[1], @server.asker, @server.players[(parsed_input[0].to_i-1)])
 		@server.broadcast(results)
+		@server.broadcast('')
 	end
 	@server.broadcast("Someone ran out of cards. Counting matched cards")
 	winner = @server.count_player_books
