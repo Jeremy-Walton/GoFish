@@ -82,16 +82,17 @@ class FishServer
 		broadcast("It is #{@asker.name}'s turn")
 	end
 
-	def play_round_step_2
+	def ask_player_to_go
 		index = @players.index(@asker)
 		@player_sockets[index].puts "What would you like to do?"
 	end
 
-	def check_input_is_valid(input)
-		if(input.match(/.*([1-9]|10).*(J|A|Q|K|[2-9]|10)/))
-			parsed_input = input.match(/.*([1-9]|10).*(J|A|Q|K|[2-9]|10)/)
+	def input_parser(input)
+		if(input.match(/.*([1-9]|10).*([JAQKjaqk]|[2-9]|10)/))
+			parsed_input = input.match(/.*([1-9]|10).*([JAQKjaqk]|[2-9]|10)/)
 			parsed_input = parsed_input.to_a
 			parsed_input.shift
+			parsed_input[1].upcase!
 			return parsed_input
 		else
 			return ''
@@ -165,18 +166,16 @@ if(__FILE__ == $0)
 		@server.display_cards
 		@server.broadcast("----------------------------------------------------------------------------------------------------")
 		@server.determine_whos_turn
-		@server.play_round_step_2
+		@server.ask_player_to_go
 
 		puts 'getting input'
 		index = @server.players.index(@server.asker)
 		while(true)
 			input = @server.get_input(index)
-			parsed_input = @server.check_input_is_valid(input)
+			parsed_input = @server.input_parser(input)
 			if(parsed_input != '' && parsed_input[0].to_i <= @server.number_of_players && parsed_input[0].to_i > 0)
 				cards = []
-				@server.asker.cards.each do |card|
-					cards.push(card.rank)
-				end
+				@server.asker.cards.each {|card| cards.push(card.rank)}
 				if(cards.include?(parsed_input[1]) == false)
 					@server.player_sockets[index].puts "You cannot ask for a card you don't already have."
 				else
@@ -193,4 +192,5 @@ if(__FILE__ == $0)
 	@server.broadcast("Someone ran out of cards. Counting matched cards")
 	winner = @server.count_player_books
 	@server.broadcast("#{winner}")
+	exit
 end

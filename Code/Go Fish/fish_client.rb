@@ -53,6 +53,8 @@ if(__FILE__ == $0)
 				pid = fork{ exec 'afplay', 'win_song.wav' }
 				sleep(10)
 				pid = fork{ exec 'afplay', 'congrats.wav' }
+				sleep(5)
+				exit
 			end
 		end
 	end
