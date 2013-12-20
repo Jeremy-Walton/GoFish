@@ -156,7 +156,8 @@ if(__FILE__ == $0)
 	@server.get_names
 	@server.assign_players
 	@server.setup_game
-	
+	sleep(2)
+	pid = fork{ exec 'afplay', 'shuffle.mp3' }
 	while(!@server.game_over)
 		@server.broadcast('')
 		@server.broadcast("----------------------------------------------------------------------------------------------------")
@@ -180,9 +181,13 @@ if(__FILE__ == $0)
 		results = @server.ask_for_cards(parsed_input[1], @server.asker, @server.players[(parsed_input[0].to_i-1)])
 		@server.broadcast(results)
 		@server.broadcast('')
+		pid = fork{ exec 'afplay', 'card.wav' }
 	end
 	@server.broadcast("Someone ran out of cards. Counting matched cards")
 	winner = @server.count_player_books
 	@server.broadcast("#{winner}")
-	@server.player_sockets[@server.index(winner)].puts "Congradulations, you won!"
+	pid = fork{ exec 'afplay', 'win_song.wav' }
+	sleep(10)
+	pid = fork{ exec 'afplay', 'congrats.wav' }
+	sleep(10)
 end

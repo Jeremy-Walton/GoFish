@@ -18,7 +18,7 @@ class Deck
 	end
 
 	def shuffle
-		@cards.shuffle!
+		@cards.shuffle! 
 	end
 
 	def take_top_card
